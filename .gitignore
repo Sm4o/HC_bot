@@ -101,7 +101,12 @@ ENV/
 .mypy_cache/
 
 # Exercise file
-Python_*
+#Python_*
 
 # API credentials
 hc_bot/credentials.py
+
+# Excel cache file
+.~lock.Python_exercise_GT_Linkers.xlsx#
+hc_bot/.~lock.results.xlsx#
+
