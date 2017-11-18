@@ -103,3 +103,5 @@ ENV/
 # Exercise file
 Python_*
 
+# API credentials
+hc_bot/credentials.py
