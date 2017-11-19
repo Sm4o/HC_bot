@@ -78,7 +78,7 @@ def send_post(image_url, logofile, text, channel, post_datetime, ID):
  
             if channel == "twitter":
                 print("sent twitter", ID)
-                #api.update_with_media(temp, status=text)
+                api.update_with_media(temp, status=text)
             elif channel == "facebook":
                 print("sent facebook", ID)
                 graph.put_photo(published=False, parent_object='128390027869974', connection_name = 'feed', message = text, image=open(temp,'rb'), scheduled_publish_time=post_datetime)
@@ -90,7 +90,7 @@ def send_post(image_url, logofile, text, channel, post_datetime, ID):
         else:
             if channel == "twitter":
                 print("send text-only twitter", ID)
-                #api.update_status(text)
+                api.update_status(text)
             elif channel == "facebook":
                 print("send text-only facebook", ID)
                 graph.put_object(published=False, parent_object='128390027869974', connection_name = 'feed', message = text, scheduled_publish_time=post_datetime)
