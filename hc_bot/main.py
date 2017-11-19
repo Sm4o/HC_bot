@@ -14,8 +14,9 @@ import sys
 sys.path.insert(0, '../api')
 import credentials as cred
 try:
-    import tweepy, requests, wget, os
+    import tweepy, facebook, requests, wget, os
     import pandas as pd
+    import datetime as dt
     import numpy as np
     from time import sleep
     from PIL import Image
@@ -36,9 +37,11 @@ def get_channels(posts):
             channel.append("facebook")
     return channel
 
-def tweet_image(image_url, logofile, text, ID):
+def send_post(image_url, logofile, text, channel, post_datetime,ID):
     # API Authorization
     api = cred.twitter_auth()
+    # Setting up Facebook Graph API
+    graph = cred.facebook_auth()
     try:
         if image_url is not None:
             imagefile = wget.download(image_url)
@@ -69,17 +72,36 @@ def tweet_image(image_url, logofile, text, ID):
             # Saving and feeding to Twitter
             temp = 'temp.jpg'
             background.save(temp)
-
-            api.update_with_media(temp, status=text)
-        else:
-            api.update_status(text)
-        
-        # Cleaning after myself
-        os.remove(imagefile)
-        os.remove(temp)
-    except:
-        print("Unable to download/process image. ID:", i)
     
+            # Adding Facebook profile picture
+            #graph.put_photo(image=open(logofile, 'rb'), album_path='128390027869974/picture')
+            
+            # Scheduling
+            timestamp = dt.datetime.strptime(post_datetime, "%d/%m/%Y %H:%M:%S").timestamp()            
+ 
+            if channel == "twitter":
+                print("sent twitter", ID)
+                #api.update_with_media(temp, status=text)
+            elif channel == "facebook":
+                print("sent facebook", ID)
+                graph.put_photo(parent_object='128390027869974', connection_name = 'feed', message = text, image=open(temp,'rb'), scheduled_publish_time=timestamp)
+            else: print("Channel not found! Not sending post.", ID)
+            
+            # Cleaning after myself
+            os.remove(imagefile)
+            os.remove(temp)
+        else:
+            if channel == "twitter":
+                print("send text-only twitter", ID)
+                #api.update_status(text)
+            elif channel == "facebook":
+                print("send text-only facebook", ID)
+                graph.put_object(parent_object='128390027869974', connection_name = 'feed', message = text, scheduled_publish_time=timestamp)
+            else: print("Channel not found! Not sending post.", ID)
+        
+    except:
+        print("Unable to download/process image. ID:", ID) 
+
 
 logo_url = "http://cityread.london/wp-content/uploads/2016/02/HarperCollins-logo.png"
 logofile = wget.download(logo_url)
@@ -101,21 +123,19 @@ writer = pd.ExcelWriter('results.xlsx', engine='xlsxwriter')
 results.to_excel(writer, sheet_name='data_table')
 writer.save()
 
-for i in range(0, len(posts['post_id'])):
-    if socialmedia_channel[i] == 'twitter':
-        try:
-            # Parsing common errors in post_img
-            img = image_url[i].split(':large')[0].replace('.jpgx', '.jpg').split('?')[0]
-            print("Posting media tweet. ID:", i, "Channel:", socialmedia_channel[i])
-            tweet_image(img, logofile, post_text[i], i)
-            sleep(5)
-        except:
-            print("Posting text-only tweet. ID:", i, "Channel:", socialmedia_channel[i])
-            tweet_image(None, logofile, post_text[i], i)
-            sleep(5)
-    else:
-        print("For Facebook!")
+#graph.put_object(parent_object='128390027869974', connection_name = 'feed', message = 'test1')
+#post = graph.get_object(id = '128390027869974_130418204333823', fields = 'message')
 
+for i in range(0, len(posts['post_id'])):
+    try:
+        # Parsing common errors in post_img
+        img = image_url[i].split(':large')[0].replace('.jpgx', '.jpg').split('?')[0]
+        send_post(img, logofile, post_text[i], socialmedia_channel[i], post_datetime[i], i)
+        sleep(5)
+    except:
+        # No image provided
+        send_post(None, logofile, post_text[i], socialmedia_channel[i], post_datetime[i], i)
+        sleep(5)
 
 # Cleanup
 os.remove(logofile)

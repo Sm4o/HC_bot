@@ -110,3 +110,6 @@ hc_bot/credentials.py
 .~lock.Python_exercise_GT_Linkers.xlsx#
 hc_bot/.~lock.results.xlsx#
 
+# Swap files
+*/.*.py.swp
+
