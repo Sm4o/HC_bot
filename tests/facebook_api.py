@@ -6,6 +6,7 @@ sys.path.insert(0, '../api')
 import credentials as cred
 import requests
 import datetime as dt
+import pandas as pd
 
 access_token = "EAAFQgmJkMMMBAFypMLjn9R8mJZCUFoZCchyXu1RnqEHApiOoK30G8vPZCUzKjC8mSGkZCekOuq5PVmIpsRPUegUmZAzLmSshDps6S6b08StDNRaz4PLdZBfLbp6Huss0k7iSgCodQyo9Tv0f9kd7I2w0nWIvyAeZCCq4ensTzWWlDl0xxNjyj9vnF9jSx4mPjoZD"
 
@@ -18,10 +19,13 @@ graph = facebook.GraphAPI(access_token = access_token, version="2.1")
 
 
 #Scheduling
-post_datetime = "19/11/2017 18:00:00"
-timestamp = dt.datetime.strptime(post_datetime, "%d/%m/%Y %H:%M:%S").timestamp()
+#post_datetime = "19/11/2017 18:00:00"
+posts = pd.read_excel('../Python_exercise_GT_Linkers.xlsx', sheet_name='data_table')
+timestamp = int(posts['post_datetime'][0].timestamp())
+print(timestamp)
+#timestamp = dt.datetime.strptime(post_datetime, "%d/%m/%Y %H:%M:%S").timestamp()
 
-graph.put_object(published=False,parent_object='128390027869974', connection_name='feed', message = "Testing", link="http://google.com", scheduled_publish_time=int(timestamp))
+graph.put_object(published=False,parent_object='128390027869974', connection_name='feed', message = "Testing", link="http://google.com", scheduled_publish_time=timestamp)
 
 #def get_fb_token(app_id, app_secret):           
 #    payload = {'grant_type': 'client_credentials', 'client_id': app_id, 'client_secret': app_secret}

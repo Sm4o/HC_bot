@@ -37,7 +37,7 @@ def get_channels(posts):
             channel.append("facebook")
     return channel
 
-def send_post(image_url, logofile, text, channel, post_datetime,ID):
+def send_post(image_url, logofile, text, channel, post_datetime, ID):
     # API Authorization
     api = cred.twitter_auth()
     # Setting up Facebook Graph API
@@ -75,16 +75,13 @@ def send_post(image_url, logofile, text, channel, post_datetime,ID):
     
             # Adding Facebook profile picture
             #graph.put_photo(image=open(logofile, 'rb'), album_path='128390027869974/picture')
-            
-            # Scheduling
-            timestamp = dt.datetime.strptime(post_datetime, "%d/%m/%Y %H:%M:%S").timestamp()            
  
             if channel == "twitter":
                 print("sent twitter", ID)
                 #api.update_with_media(temp, status=text)
             elif channel == "facebook":
                 print("sent facebook", ID)
-                graph.put_photo(parent_object='128390027869974', connection_name = 'feed', message = text, image=open(temp,'rb'), scheduled_publish_time=timestamp)
+                graph.put_photo(published=False, parent_object='128390027869974', connection_name = 'feed', message = text, image=open(temp,'rb'), scheduled_publish_time=post_datetime)
             else: print("Channel not found! Not sending post.", ID)
             
             # Cleaning after myself
@@ -96,7 +93,7 @@ def send_post(image_url, logofile, text, channel, post_datetime,ID):
                 #api.update_status(text)
             elif channel == "facebook":
                 print("send text-only facebook", ID)
-                graph.put_object(parent_object='128390027869974', connection_name = 'feed', message = text, scheduled_publish_time=timestamp)
+                graph.put_object(published=False, parent_object='128390027869974', connection_name = 'feed', message = text, scheduled_publish_time=post_datetime)
             else: print("Channel not found! Not sending post.", ID)
         
     except:
@@ -127,14 +124,15 @@ writer.save()
 #post = graph.get_object(id = '128390027869974_130418204333823', fields = 'message')
 
 for i in range(0, len(posts['post_id'])):
+    timestamp = int(posts['post_datetime'][i].timestamp())
     try:
         # Parsing common errors in post_img
         img = image_url[i].split(':large')[0].replace('.jpgx', '.jpg').split('?')[0]
-        send_post(img, logofile, post_text[i], socialmedia_channel[i], post_datetime[i], i)
+        send_post(img, logofile, post_text[i], socialmedia_channel[i], timestamp, i)
         sleep(5)
     except:
         # No image provided
-        send_post(None, logofile, post_text[i], socialmedia_channel[i], post_datetime[i], i)
+        send_post(None, logofile, post_text[i], socialmedia_channel[i], timestamp, i)
         sleep(5)
 
 # Cleanup
